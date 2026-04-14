@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="WINGO - Real-time Color Prediction Game. Predict colors and numbers to win big prizes!">
+  <title>WINGO - Color Trading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- ─── Background particles ─── -->
+  <div class="bg-particles" id="bgParticles"></div>
+
+  <!-- ─── Main Container ─── -->
+  <div class="app-container">
+
+    <!-- ─── Header ─── -->
+    <header class="game-header" id="gameHeader">
+      <div class="header-left" style="display: flex; align-items: center; gap: 10px;">
+        <a href="/dashboard" class="back-btn" style="text-decoration: none; color: white; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); width: 32px; height: 32px; border-radius: 8px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 18l-6-6 6-6"/></svg>
+        </a>
+        <div class="logo">
+          <div class="logo-icon">
+            <span class="logo-w">W</span>
+          </div>
+          <h1 class="logo-text" style="margin:0;">WINGO</h1>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="balance-card" id="balanceCard">
+          <span class="balance-label">Balance</span>
+          <span class="balance-amount" id="balanceAmount">₹0.00</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ─── Period & Timer Section ─── -->
+    <section class="timer-section" id="timerSection">
+      <div class="period-info">
+        <span class="period-label">Period</span>
+        <span class="period-number" id="periodNumber">---</span>
+      </div>
+      <div class="timer-container">
+        <div class="timer-ring" id="timerRing">
+          <svg class="timer-svg" viewBox="0 0 200 200">
+            <circle class="timer-track" cx="100" cy="100" r="88"/>
+            <circle class="timer-progress" cx="100" cy="100" r="88" id="timerProgress"/>
+          </svg>
+          <div class="timer-inner">
+            <span class="timer-phase" id="timerPhase">WAITING</span>
+            <span class="timer-digits" id="timerDigits">00:00</span>
+            <span class="timer-sub" id="timerSub">Place your bets</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Recent Results Strip ─── -->
+    <section class="results-strip" id="resultsStrip">
+      <div class="strip-label">Recent</div>
+      <div class="strip-balls" id="stripBalls">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- ─── Betting Panel ─── -->
+    <section class="betting-section" id="bettingSection">
+      <!-- Color Betting -->
+      <div class="bet-group">
+        <h3 class="bet-group-title">Choose Color</h3>
+        <div class="color-buttons">
+          <button class="color-btn green-btn" data-color="green" id="btnGreen">
+            <span class="color-dot green-dot"></span>
+            <span>Green</span>
+            <span class="payout-tag">2x</span>
+          </button>
+          <button class="color-btn violet-btn" data-color="violet" id="btnViolet">
+            <span class="color-dot violet-dot"></span>
+            <span>Violet</span>
+            <span class="payout-tag">4.5x</span>
+          </button>
+          <button class="color-btn red-btn" data-color="red" id="btnRed">
+            <span class="color-dot red-dot"></span>
+            <span>Red</span>
+            <span class="payout-tag">2x</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Number Betting -->
+      <div class="bet-group">
+        <h3 class="bet-group-title">Choose Number <span class="payout-info">9x payout</span></h3>
+        <div class="number-grid">
+          <button class="number-btn" data-number="0" id="btnNum0">
+            <span class="num-value">0</span>
+            <div class="num-colors"><span class="nc red"></span><span class="nc violet"></span></div>
+          </button>
+          <button class="number-btn" data-number="1" id="btnNum1">
+            <span class="num-value">1</span>
+            <div class="num-colors"><span class="nc green"></span></div>
+          </button>
+          <button class="number-btn" data-number="2" id="btnNum2">
+            <span class="num-value">2</span>
+            <div class="num-colors"><span class="nc red"></span></div>
+          </button>
+          <button class="number-btn" data-number="3" id="btnNum3">
+            <span class="num-value">3</span>
+            <div class="num-colors"><span class="nc green"></span></div>
+          </button>
+          <button class="number-btn" data-number="4" id="btnNum4">
+            <span class="num-value">4</span>
+            <div class="num-colors"><span class="nc red"></span></div>
+          </button>
+          <button class="number-btn" data-number="5" id="btnNum5">
+            <span class="num-value">5</span>
+            <div class="num-colors"><span class="nc green"></span><span class="nc violet"></span></div>
+          </button>
+          <button class="number-btn" data-number="6" id="btnNum6">
+            <span class="num-value">6</span>
+            <div class="num-colors"><span class="nc red"></span></div>
+          </button>
+          <button class="number-btn" data-number="7" id="btnNum7">
+            <span class="num-value">7</span>
+            <div class="num-colors"><span class="nc green"></span></div>
+          </button>
+          <button class="number-btn" data-number="8" id="btnNum8">
+            <span class="num-value">8</span>
+            <div class="num-colors"><span class="nc red"></span></div>
+          </button>
+          <button class="number-btn" data-number="9" id="btnNum9">
+            <span class="num-value">9</span>
+            <div class="num-colors"><span class="nc green"></span></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Size Betting -->
+      <div class="bet-group">
+        <h3 class="bet-group-title">Choose Size <span class="payout-info">2x payout</span></h3>
+        <div class="size-buttons">
+          <button class="size-btn small-btn" data-size="small" id="btnSmall">
+            <span>Small</span>
+            <span class="size-range">(0-4)</span>
+          </button>
+          <button class="size-btn big-btn" data-size="big" id="btnBig">
+            <span>Big</span>
+            <span class="size-range">(5-9)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Amount Selection -->
+      <div class="bet-group">
+        <h3 class="bet-group-title">Bet Amount</h3>
+        <div class="amount-grid">
+          <button class="amount-btn" data-amount="10" id="btnAmt10">₹10</button>
+          <button class="amount-btn" data-amount="100" id="btnAmt100">₹100</button>
+          <button class="amount-btn" data-amount="500" id="btnAmt500">₹500</button>
+          <button class="amount-btn active" data-amount="1000" id="btnAmt1000">₹1,000</button>
+          <button class="amount-btn" data-amount="5000" id="btnAmt5000">₹5,000</button>
+          <button class="amount-btn" data-amount="10000" id="btnAmt10000">₹10,000</button>
+        </div>
+        <div class="custom-amount-row">
+          <div class="amount-input-wrap">
+            <span class="currency-symbol">₹</span>
+            <input type="number" class="amount-input" id="customAmount" placeholder="Custom amount" min="10" max="100000">
+          </div>
+        </div>
+      </div>
+
+      <!-- Place Bet Button -->
+      <button class="place-bet-btn" id="placeBetBtn" disabled>
+        <span class="bet-btn-text">Select a color or number</span>
+        <span class="bet-btn-glow"></span>
+      </button>
+    </section>
+
+    <!-- ─── Active Bets ─── -->
+    <section class="active-bets-section" id="activeBetsSection" style="display:none;">
+      <h3 class="section-title">Your Bets This Round</h3>
+      <div class="active-bets-list" id="activeBetsList">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- ─── History Table ─── -->
+    <section class="history-section" id="historySection">
+      <h3 class="section-title">Game History</h3>
+      <div class="history-table-wrap">
+        <table class="history-table" id="historyTable">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Number</th>
+              <th>Color</th>
+              <th>Size</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ─── My Bets History ─── -->
+    <section class="my-bets-section" id="myBetsSection">
+      <h3 class="section-title">My Recent Bets</h3>
+      <div class="my-bets-list" id="myBetsList">
+        <div class="empty-state">No bets placed yet. Start playing!</div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ─── Result Modal ─── -->
+  <div class="result-overlay" id="resultOverlay">
+    <div class="result-modal" id="resultModal">
+      <div class="result-ball-container">
+        <div class="result-ball" id="resultBall">
+          <span class="result-number" id="resultNumber">?</span>
+        </div>
+      </div>
+      <div class="result-info">
+        <div class="result-colors" id="resultColors"></div>
+        <div class="result-size" id="resultSize"></div>
+      </div>
+      <div class="result-outcome" id="resultOutcome"></div>
+      <div class="result-period" id="resultPeriod"></div>
+    </div>
+  </div>
+
+  <!-- ─── Toast Container ─── -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ─── Scripts ─── -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/game.js"></script>
+</body>
+</html>

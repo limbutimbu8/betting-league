@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+  <meta content="Prediction Club - High-Velocity Betting Dashboard" name="description" />
+  <title>Dashboard — Prediction Club</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary": "#00e476",
+            "secondary": "#d0bcff",
+            "surface": "#131316",
+            "surface-variant": "#353438",
+            "surface-container-lowest": "#0e0e11",
+            "surface-container-low": "#1b1b1e",
+            "surface-container": "#1f1f22",
+            "surface-container-high": "#2a2a2d",
+            "surface-container-highest": "#353438",
+            "on-surface": "#e4e1e6",
+            "on-primary": "#003919",
+            "error": "#ffb4ab"
+          },
+          "fontFamily": {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #131316;
+      color: #e4e1e6;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .kinetic-gradient {
+      background: linear-gradient(135deg, #00e476 0%, #006a33 100%);
+    }
+
+    .text-glow {
+      text-shadow: 0 0 15px rgba(0, 228, 118, 0.4);
+    }
+
+    .glow-border {
+      border: 1px solid rgba(228, 225, 230, 0.1);
+    }
+
+    .nav-link.active {
+      color: #00e476;
+    }
+
+    /* Desktop nav indicator */
+    @media (min-width: 768px) {
+      .nav-link.active {
+        background: rgba(255, 255, 255, 0.05);
+        border-right: 4px solid #00e476;
+      }
+    }
+
+    .dash-panel {
+      display: none;
+    }
+
+    .dash-panel.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .panel-no-scroll {
+      overflow: hidden;
+      height: calc(100vh - 64px);
+    }
+
+    .game-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Mobile fixes */
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 1rem);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+
+</head>
+
+<body class="bg-surface text-on-surface pb-20 md:pb-0">
+
+  <nav
+    class="md:hidden fixed bottom-0 left-0 w-full bg-surface-container-high/90 backdrop-blur-xl border-t border-white/5 z-50 flex justify-around items-center px-2 py-2 pb-safe"
+    id="mobileNav">
+    <button class="nav-link flex flex-col items-center gap-1 p-2 text-zinc-500 active" data-tab="tab-home">
+      <span class="material-symbols-outlined text-2xl">grid_view</span>
+      <span class="text-[10px] font-bold tracking-wider">Home</span>
+    </button>
+    <button class="nav-link flex flex-col items-center gap-1 p-2 text-zinc-500" data-tab="tab-game">
+      <span class="material-symbols-outlined text-2xl">sports_esports</span>
+      <span class="text-[10px] font-bold tracking-wider">Games</span>
+    </button>
+    <button class="nav-link flex flex-col items-center gap-1 p-2 text-zinc-500" data-tab="tab-wallet">
+      <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+      <span class="text-[10px] font-bold tracking-wider">Wallet</span>
+    </button>
+    <button class="nav-link flex flex-col items-center gap-1 p-2 text-zinc-500" data-tab="tab-transactions">
+      <span class="material-symbols-outlined text-2xl">receipt_long</span>
+      <span class="text-[10px] font-bold tracking-wider">History</span>
+    </button>
+    <button class="nav-link flex flex-col items-center gap-1 p-2 text-zinc-500" data-tab="tab-contact">
+      <span class="material-symbols-outlined text-2xl">support_agent</span>
+      <span class="text-[10px] font-bold tracking-wider">Support</span>
+    </button>
+    <button class="nav-link flex flex-col items-center gap-1 p-2 text-zinc-500" data-tab="tab-settings">
+      <span class="material-symbols-outlined text-2xl">settings</span>
+      <span class="text-[10px] font-bold tracking-wider">Settings</span>
+    </button>
+  </nav>
+
+  <aside
+    class="dash-nav hidden md:flex fixed left-0 top-0 h-full flex-col p-4 z-40 bg-surface w-64 border-r border-white/5 font-['Inter'] text-sm tracking-wide"
+    id="dashNav">
+    <div class="mb-10 flex items-center gap-3 px-2">
+      <div class="w-10 h-10 kinetic-gradient rounded-full flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary font-bold">bolt</span>
+      </div>
+      <div>
+        <h1 class="italic font-black text-xl text-primary leading-none">PREDICTION</h1>
+        <p class="text-[10px] uppercase tracking-[0.2em] text-secondary opacity-70">Club Dashboard</p>
+      </div>
+    </div>
+
+    <nav class="nav-links flex-1 space-y-2">
+      <button
+        class="nav-link w-full flex items-center gap-3 px-4 py-3 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors active"
+        data-tab="tab-home">
+        <span class="material-symbols-outlined">grid_view</span>
+        <span class="nav-text">Home</span>
+      </button>
+      <button
+        class="nav-link w-full flex items-center gap-3 px-4 py-3 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
+        data-tab="tab-game">
+        <span class="material-symbols-outlined">sports_esports</span>
+        <span class="nav-text">Games</span>
+      </button>
+      <button
+        class="nav-link w-full flex items-center gap-3 px-4 py-3 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
+        data-tab="tab-wallet">
+        <span class="material-symbols-outlined">account_balance_wallet</span>
+        <span class="nav-text">Wallet</span>
+      </button>
+      <button
+        class="nav-link w-full flex items-center gap-3 px-4 py-3 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
+        data-tab="tab-transactions">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span class="nav-text">Transactions</span>
+      </button>
+      <button
+        class="nav-link w-full flex items-center gap-3 px-4 py-3 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
+        data-tab="tab-contact">
+        <span class="material-symbols-outlined">support_agent</span>
+        <span class="nav-text">Support</span>
+      </button>
+      <button
+        class="nav-link w-full flex items-center gap-3 px-4 py-3 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
+        data-tab="tab-settings">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="nav-text">Settings</span>
+      </button>
+    </nav>
+
+    <div class="mt-auto pt-6 border-t border-white/5 space-y-2">
+      <div class="nav-user flex items-center gap-3 px-4 py-2 text-zinc-500">
+        <div
+          class="user-avatar w-8 h-8 rounded-full overflow-hidden border border-white/10 bg-zinc-800 flex items-center justify-center">
+          <span class="material-symbols-outlined text-zinc-400 text-sm">person</span>
+        </div>
+        <span class="text-xs font-bold text-zinc-300">Player_420</span>
+      </div>
+      <a class="flex items-center gap-3 px-4 py-2 text-zinc-500 hover:text-error transition-colors" href="javascript:void(0)" onclick="logoutUser()">
+        <span class="material-symbols-outlined">logout</span>
+        <span>Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <header
+    class="sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 w-full h-16 bg-zinc-950/80 backdrop-blur-xl border-b border-white/10 md:ml-64 md:w-[calc(100%-16rem)]">
+    <div class="flex items-center gap-8 w-full md:w-auto">
+      <div class="md:hidden flex items-center gap-2 font-black italic text-primary">
+        <span class="material-symbols-outlined text-xl">bolt</span> PREDICTION
+      </div>
+
+      <div class="relative group hidden md:block">
+        <span
+          class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-primary">search</span>
+        <input
+          class="bg-surface-container-low border-none rounded-full pl-10 pr-6 py-2 text-sm w-80 focus:ring-1 focus:ring-primary/50 transition-all outline-none"
+          placeholder="Search markets, games..." type="text" />
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <button class="relative text-zinc-400 hover:text-white transition-colors">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full"></span>
+      </button>
+      <button
+        class="bg-primary/10 border border-primary/20 text-primary px-4 md:px-5 py-1.5 rounded-full text-xs font-bold tracking-tighter hover:bg-primary hover:text-on-primary transition-all duration-300"
+        onclick="window.dashboard.switchTab('tab-wallet')">
+        DEPOSIT
+      </button>
+    </div>
+  </header>
+
+  <main class="dash-main md:ml-64 p-4 md:p-8 min-h-screen">
+
+    <div class="dash-panel active" id="tab-home">
+      <div class="grid grid-cols-12 gap-6 mb-8">
+
+        <div
+          class="col-span-12 lg:col-span-8 relative overflow-hidden rounded-3xl bg-surface-container-high p-6 md:p-8 flex flex-col justify-between shadow-2xl glow-border min-h-[250px] md:min-h-[280px]">
+          <div class="absolute -right-20 -top-20 w-80 h-80 bg-secondary/10 rounded-full blur-[100px]"></div>
+          <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <p class="text-sm font-medium text-secondary tracking-widest mb-1 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> ONLINE BALANCE
+              </p>
+              <h2 class="text-4xl md:text-5xl font-black italic tracking-tighter text-glow" id="uiBalance">
+                ₹0.00
+              </h2>
+            </div>
+            <div class="flex gap-3 w-full md:w-auto">
+              <button
+                class="flex-1 md:flex-none px-6 py-3 bg-primary text-on-primary font-black text-xs rounded-full shadow-[0_0_20px_rgba(0,228,118,0.3)] hover:scale-105 transition-transform"
+                onclick="window.dashboard.switchTab('tab-wallet')">
+                DEPOSIT
+              </button>
+              <button
+                class="flex-1 md:flex-none px-6 py-3 bg-surface-bright text-on-surface font-bold text-xs rounded-full border border-white/10 hover:bg-white/5 transition-all"
+                onclick="window.dashboard.switchTab('tab-wallet')">
+                WITHDRAW
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mt-8 border-t border-white/5 pt-6 md:pt-8">
+            <div>
+              <p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">TOTAL PROFIT</p>
+              <p class="text-primary font-bold text-lg" id="uiTotalProfit">₹0.00</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">TOTAL LOSS</p>
+              <p class="text-error font-bold text-lg" id="uiTotalLoss">₹0.00</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">TOTAL BETS</p>
+              <p class="text-white font-bold text-lg" id="uiTotalBets">0</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">WIN RATE</p>
+              <p class="text-secondary font-bold text-lg" id="uiWinRate">0%</p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="col-span-12 lg:col-span-4 relative rounded-3xl overflow-hidden bg-surface-container-high group glow-border min-h-[200px]">
+          <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20"></div>
+          <div class="relative z-10 p-6 md:p-8 h-full flex flex-col justify-end items-start">
+            <span
+              class="px-3 py-1 bg-primary/20 text-primary text-[10px] font-black rounded-full mb-3 italic tracking-tighter">FEATURED
+              GAME</span>
+            <h3 class="text-3xl font-black italic tracking-tighter mb-2">WINGO</h3>
+            <p class="text-zinc-400 text-sm mb-6 max-w-[200px]">Next Round: 00:30s</p>
+            <button
+              class="w-full bg-white text-black font-black text-xs py-3 rounded-full hover:bg-primary transition-colors"
+              onclick="window.dashboard.switchTab('tab-game'); if(window.dashboard.openGame) window.dashboard.openGame();">PLAY
+              WINGO →</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-12 gap-6 md:gap-8">
+        <div class="col-span-12 xl:col-span-12">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-black italic tracking-tighter text-white">RECENT ACTIVITY</h3>
+            <button class="text-xs text-secondary hover:underline tracking-widest"
+              onclick="window.dashboard.switchTab('tab-transactions')">VIEW ALL</button>
+          </div>
+          <div class="bg-surface-container-low rounded-3xl overflow-hidden glow-border overflow-x-auto">
+            <table class="w-full text-left whitespace-nowrap">
+              <thead>
+                <tr class="text-[10px] uppercase tracking-widest text-zinc-500 border-b border-white/5 bg-black/20">
+                  <th class="px-6 py-4">Event</th>
+                  <th class="px-6 py-4">Stake</th>
+                  <th class="px-6 py-4">Outcome</th>
+                  <th class="px-6 py-4 text-right">Time</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5">
+                <tr class="hover:bg-white/5 transition-colors group">
+                  <td class="px-6 py-5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-sm">bolt</span>
+                      </div>
+                      <span class="text-sm font-semibold text-zinc-200">WINGO</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-5 text-sm text-zinc-400">Bet: ₹50.00</td>
+                  <td class="px-6 py-5">
+                    <span class="flex items-center gap-2 text-[10px] font-black text-primary italic">
+                      WIN (+₹90.00)
+                    </span>
+                  </td>
+                  <td class="px-6 py-5 text-right text-xs text-zinc-500">10:30 AM</td>
+                </tr>
+                <tr class="hover:bg-white/5 transition-colors group">
+                  <td class="px-6 py-5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center">
+                        <span class="material-symbols-outlined text-secondary text-sm">casino</span>
+                      </div>
+                      <span class="text-sm font-semibold text-zinc-200">WINGO</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-5 text-sm text-zinc-400">Bet: ₹100.00</td>
+                  <td class="px-6 py-5">
+                    <span class="flex items-center gap-2 text-[10px] font-black text-error italic">
+                      LOSS (-₹100.00)
+                    </span>
+                  </td>
+                  <td class="px-6 py-5 text-right text-xs text-zinc-500">10:28 AM</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-panel panel-no-scroll relative" id="tab-game">
+
+      <div id="gamesDirectory" class="h-full overflow-y-auto w-full pb-24 md:pb-0">
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-3xl font-black italic tracking-tighter text-white">ALL GAMES</h1>
+        </div>
+
+        <h3 class="text-[10px] text-primary uppercase tracking-widest mb-4 font-black">Live Now</h3>
+        <div
+          class="relative rounded-3xl overflow-hidden bg-surface-container-high group glow-border mb-10 cursor-pointer"
+          onclick="if(window.dashboard.openGame) window.dashboard.openGame();">
+          <div class="absolute inset-0 bg-gradient-to-r from-green-600/20 to-emerald-900/20"></div>
+          <div
+            class="relative z-10 p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <span
+                class="px-3 py-1 bg-primary/20 text-primary text-[10px] font-black rounded-full mb-3 italic tracking-tighter inline-block">COLOR
+                TRADING</span>
+              <h2 class="text-4xl font-black italic tracking-tighter">WINGO</h2>
+            </div>
+            <div class="text-left md:text-center">
+              <p class="text-zinc-500 text-xs uppercase tracking-widest mb-1">Status</p>
+              <p class="text-primary font-bold">Running 24/7</p>
+            </div>
+            <button
+              class="bg-white text-black font-black text-xs px-8 py-3 rounded-full hover:bg-primary transition-colors w-full md:w-auto shadow-lg">PLAY
+              WINGO →</button>
+          </div>
+        </div>
+
+        <h3 class="text-[10px] text-zinc-500 uppercase tracking-widest mb-4 font-black">Coming Soon</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div
+            class="relative aspect-square rounded-3xl overflow-hidden group glow-border bg-surface-container-high p-4 flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-secondary text-5xl mb-2 opacity-50">casino</span>
+            <h4 class="text-white font-bold text-sm">Roulette</h4>
+            <div class="absolute top-3 right-3 px-2 py-0.5 bg-black/60 rounded-full text-[8px] font-bold text-zinc-400">
+              SOON</div>
+          </div>
+          <div
+            class="relative aspect-square rounded-3xl overflow-hidden group glow-border bg-surface-container-high p-4 flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-secondary text-5xl mb-2 opacity-50">style</span>
+            <h4 class="text-white font-bold text-sm">Blackjack</h4>
+            <div class="absolute top-3 right-3 px-2 py-0.5 bg-black/60 rounded-full text-[8px] font-bold text-zinc-400">
+              SOON</div>
+          </div>
+          <div
+            class="relative aspect-square rounded-3xl overflow-hidden group glow-border bg-surface-container-high p-4 flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-secondary text-5xl mb-2 opacity-50">slot_machine</span>
+            <h4 class="text-white font-bold text-sm">Slots</h4>
+            <div class="absolute top-3 right-3 px-2 py-0.5 bg-black/60 rounded-full text-[8px] font-bold text-zinc-400">
+              SOON</div>
+          </div>
+          <div
+            class="relative aspect-square rounded-3xl overflow-hidden group glow-border bg-surface-container-high p-4 flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-secondary text-5xl mb-2 opacity-50">playing_cards</span>
+            <h4 class="text-white font-bold text-sm">Poker</h4>
+            <div class="absolute top-3 right-3 px-2 py-0.5 bg-black/60 rounded-full text-[8px] font-bold text-zinc-400">
+              SOON</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="absolute inset-0 bg-surface z-50 flex flex-col hidden" id="gameViewOverlay">
+        <div class="flex items-center justify-between p-4 border-b border-white/5 bg-surface-container-high">
+          <button class="flex items-center gap-2 text-zinc-400 hover:text-white text-sm font-bold transition-colors"
+            onclick="if(window.dashboard.closeGame) window.dashboard.closeGame(); else { document.getElementById('gameViewOverlay').classList.add('hidden'); document.getElementById('gamesDirectory').classList.remove('hidden'); }">
+            <span class="material-symbols-outlined text-sm">arrow_back_ios</span> Back
+          </button>
+          <span
+            class="font-black italic text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary tracking-widest">WINGO
+            PLAYING</span>
+          <div class="w-16"></div>
+        </div>
+        <div class="flex-1 relative w-full h-full">
+          <iframe src="/game" class="game-iframe absolute inset-0" id="gameFrame" title="Wingo Game"></iframe>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="dash-panel" id="tab-wallet">
+      <div class="max-w-4xl mx-auto pb-10">
+        <div
+          class="wallet-balance-banner mb-8 p-6 md:p-8 rounded-3xl kinetic-gradient text-on-primary flex flex-col items-center text-center">
+          <span class="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">Available
+            Balance</span>
+          <span class="text-4xl md:text-5xl font-black italic tracking-tighter" id="uiBalanceWallet">₹0.00</span>
+        </div>
+
+        <div class="flex gap-4 mb-8">
+          <button
+            class="w-tab active flex-1 py-3 md:py-4 bg-surface-container-high rounded-xl md:rounded-full font-black text-xs md:text-sm tracking-widest border border-primary/20 text-primary transition-all"
+            id="wTabDeposit">DEPOSIT</button>
+          <button
+            class="w-tab flex-1 py-3 md:py-4 bg-surface-container-low rounded-xl md:rounded-full font-black text-xs md:text-sm tracking-widest text-zinc-500 border border-transparent hover:bg-surface-container-high transition-all"
+            id="wTabWithdraw">WITHDRAW</button>
+        </div>
+
+        <div class="wallet-view active bg-surface-container-low p-6 md:p-8 rounded-3xl glow-border" id="viewDeposit">
+
+          <div
+            class="bg-white rounded-2xl p-4 w-48 md:w-56 mx-auto mb-6 flex flex-col items-center justify-center border-4 border-primary">
+            <img id="qrCodeImage" src="" alt="UPI QR Code" class="w-full h-auto aspect-square object-contain" />
+            <span class="text-black font-black text-[10px] mt-2 uppercase tracking-widest" id="upiIdDisplay">Scan via UPI</span>
+          </div>
+          <p class="text-center text-zinc-500 text-xs md:text-sm mb-8">Scan the QR code to pay, then enter the amount
+            and 12-digit UTR below.</p>
+
+          <div class="mb-6">
+            <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block">Deposit Amount
+              (₹)</label>
+            <div class="grid grid-cols-4 gap-2 md:gap-4 mb-4">
+              <button
+                class="py-2 md:py-3 bg-surface-container-high rounded-xl text-xs md:text-sm font-bold hover:bg-primary hover:text-on-primary transition-all border border-white/5"
+                onclick="document.getElementById('dep_amt').value='500'">500</button>
+              <button
+                class="py-2 md:py-3 bg-surface-container-high rounded-xl text-xs md:text-sm font-bold hover:bg-primary hover:text-on-primary transition-all border border-white/5"
+                onclick="document.getElementById('dep_amt').value='1000'">1000</button>
+              <button
+                class="py-2 md:py-3 bg-surface-container-high rounded-xl text-xs md:text-sm font-bold hover:bg-primary hover:text-on-primary transition-all border border-white/5"
+                onclick="document.getElementById('dep_amt').value='2000'">2000</button>
+              <button
+                class="py-2 md:py-3 bg-surface-container-high rounded-xl text-xs md:text-sm font-bold hover:bg-primary hover:text-on-primary transition-all border border-white/5"
+                onclick="document.getElementById('dep_amt').value='5000'">5000</button>
+            </div>
+            <input
+              class="w-full bg-surface-container-highest border border-white/5 rounded-2xl p-4 text-white focus:ring-2 focus:ring-primary outline-none text-sm"
+              id="dep_amt" placeholder="Enter amount (Min 100)" type="number" />
+          </div>
+
+          <div class="mb-8">
+            <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block">Transaction ID /
+              UTR</label>
+            <input
+              class="w-full bg-surface-container-highest border border-white/5 rounded-2xl p-4 text-white focus:ring-2 focus:ring-primary outline-none text-sm"
+              id="dep_utr" placeholder="12-digit UPI UTR Number" type="text" />
+          </div>
+
+          <button
+            class="w-full py-4 kinetic-gradient rounded-full text-on-primary font-black text-xs md:text-sm tracking-[0.2em] shadow-lg hover:scale-[1.02] transition-transform"
+            onclick="if(typeof submitDeposit === 'function') submitDeposit(); else alert('Connected to submitDeposit()');">SUBMIT
+            REQUEST</button>
+        </div>
+
+        <div class="wallet-view hidden bg-surface-container-low p-6 md:p-8 rounded-3xl glow-border" id="viewWithdraw">
+          <div class="mb-6">
+            <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block">Withdrawal Amount
+              (₹)</label>
+            <input
+              class="w-full bg-surface-container-highest border border-white/5 rounded-2xl p-4 text-white focus:ring-2 focus:ring-primary outline-none text-sm mb-2"
+              id="wit_amt" placeholder="Min 500" type="number" />
+            <span class="text-[10px] text-error font-bold italic bg-error/10 px-2 py-1 rounded">Fee: 5% per
+              transaction</span>
+          </div>
+
+          <div class="mb-8">
+            <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block">Bank Account / UPI
+              ID</label>
+            <input
+              class="w-full bg-surface-container-highest border border-white/5 rounded-2xl p-4 text-white focus:ring-2 focus:ring-primary outline-none text-sm"
+              id="wit_bank" placeholder="Enter Account No / UPI ID" type="text" />
+          </div>
+
+          <button
+            class="w-full py-4 bg-surface-bright text-white border border-white/10 rounded-full font-black text-xs md:text-sm tracking-[0.2em] shadow-lg hover:bg-white hover:text-black transition-colors"
+            onclick="if(typeof submitWithdraw === 'function') submitWithdraw(); else alert('Connected to submitWithdraw()');">REQUEST
+            WITHDRAWAL</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-panel" id="tab-transactions">
+      <div class="max-w-5xl mx-auto pb-10">
+        <header class="mb-8 flex items-center justify-between">
+          <h1 class="text-3xl md:text-4xl font-black italic tracking-tighter text-glow">TRANSACTIONS</h1>
+        </header>
+
+        <div class="bg-surface-container-low rounded-3xl p-6 glow-border min-h-[400px]">
+          <div class="tx-list flex flex-col gap-4" id="transactionList">
+            <div class="text-center py-10 text-zinc-500">
+              <span class="material-symbols-outlined text-4xl mb-2 opacity-50">receipt_long</span>
+              <p class="text-sm font-bold tracking-widest uppercase">Loading transaction data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-panel" id="tab-contact">
+      <div class="max-w-4xl mx-auto pb-10">
+        <header class="mb-10 text-center">
+          <h1 class="text-3xl md:text-4xl font-black italic tracking-tighter text-glow mb-4">VELOCITY SUPPORT</h1>
+          <p class="text-zinc-500 text-sm md:text-base max-w-lg mx-auto">Our squad is on standby 24/7. High-velocity
+            resolution for all your account needs.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-10">
+          <a id="supportWhatsapp" class="group relative overflow-hidden p-6 md:p-8 rounded-3xl bg-surface-container-low border border-white/5 hover:border-primary/50 transition-all"
+            href="#" target="_blank">
+            <div
+              class="absolute -right-10 -top-10 w-32 h-32 bg-[#25D366]/10 rounded-full blur-3xl group-hover:bg-[#25D366]/20 transition-all">
+            </div>
+            <div class="relative z-10 flex flex-col items-center md:items-start text-center md:text-left">
+              <div class="w-12 h-12 rounded-full bg-[#25D366]/20 flex items-center justify-center mb-4 md:mb-6">
+                <svg fill="#25D366" height="24" viewbox="0 0 24 24" width="24">
+                  <path
+                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z">
+                  </path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-2">WHATSAPP</h3>
+              <p class="text-zinc-500 text-xs md:text-sm">Direct line for instant chat assistance.</p>
+              <span
+                class="mt-4 md:mt-6 inline-flex items-center gap-2 text-primary font-black text-[10px] tracking-widest italic group-hover:translate-x-2 transition-transform">CONNECT
+                NOW →</span>
+            </div>
+          </a>
+
+          <a id="supportTelegram" class="group relative overflow-hidden p-6 md:p-8 rounded-3xl bg-surface-container-low border border-white/5 hover:border-secondary/50 transition-all"
+            href="#" target="_blank">
+            <div
+              class="absolute -right-10 -top-10 w-32 h-32 bg-[#0088cc]/10 rounded-full blur-3xl group-hover:bg-[#0088cc]/20 transition-all">
+            </div>
+            <div class="relative z-10 flex flex-col items-center md:items-start text-center md:text-left">
+              <div class="w-12 h-12 rounded-full bg-[#0088cc]/20 flex items-center justify-center mb-4 md:mb-6">
+                <svg fill="#0088cc" height="24" viewbox="0 0 24 24" width="24">
+                  <path
+                    d="M20.57 3.34L2.54 10.14C1.34 10.61 1.35 11.27 2.32 11.56L6.91 12.99L17.43 6.22C17.93 5.92 18.38 6.09 18.01 6.42L9.37 14.29H9.37L9.37 14.29L9.05 19.01C9.52 19.01 9.73 18.79 10 18.53L12.38 16.21L17.01 19.68C17.87 20.15 18.5 19.91 18.72 18.88L21.9 4.85C22.22 3.6 21.41 3.02 20.57 3.34Z">
+                  </path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-2">TELEGRAM</h3>
+              <p class="text-zinc-500 text-xs md:text-sm">Join the community for updates & support.</p>
+              <span
+                class="mt-4 md:mt-6 inline-flex items-center gap-2 text-secondary font-black text-[10px] tracking-widest italic group-hover:translate-x-2 transition-transform">JOIN
+                CHANNEL →</span>
+            </div>
+          </a>
+        </div>
+
+        <div
+          class="text-center p-6 md:p-8 bg-surface-container-highest/30 rounded-3xl border border-dashed border-white/10">
+          <p class="text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-widest">Formal Inquiries</p>
+          <a class="text-primary hover:underline text-base md:text-lg font-black italic"
+            href="mailto:support@predictionclub.com">support@predictionclub.com</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div class="dash-panel" id="tab-settings">
+      <div class="max-w-xl mx-auto">
+        <header class="mb-8">
+          <h2
+            class="text-3xl md:text-4xl font-black italic tracking-tighter bg-gradient-to-r from-white to-zinc-500 bg-clip-text text-transparent">
+            SETTINGS</h2>
+          <p class="text-zinc-500 text-xs md:text-sm mt-2">Manage your account security.</p>
+        </header>
+
+        <div class="bg-surface-container-low p-6 md:p-8 rounded-3xl glow-border mb-6">
+          <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">lock</span>
+            Change Password
+          </h3>
+          <div class="space-y-4">
+            <div>
+              <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 block">Current Password</label>
+              <input type="password" id="currentPassword" placeholder="Enter current password"
+                class="w-full bg-surface-container-high border border-white/5 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary/50 outline-none" />
+            </div>
+            <div>
+              <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 block">New Password</label>
+              <input type="password" id="newPassword" placeholder="Enter new password"
+                class="w-full bg-surface-container-high border border-white/5 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary/50 outline-none" />
+            </div>
+            <div>
+              <label class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 block">Confirm New Password</label>
+              <input type="password" id="confirmNewPassword" placeholder="Confirm new password"
+                class="w-full bg-surface-container-high border border-white/5 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary/50 outline-none" />
+            </div>
+            <button onclick="changePassword()"
+              class="w-full kinetic-gradient text-on-primary py-3 rounded-xl text-sm font-black tracking-widest hover:scale-[1.02] transition-transform">UPDATE
+              PASSWORD</button>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-low p-6 md:p-8 rounded-3xl glow-border">
+          <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-red-400">logout</span>
+            Account
+          </h3>
+          <p class="text-zinc-500 text-xs mb-4">Log out of your current session.</p>
+          <button onclick="logoutUser()"
+            class="w-full bg-red-500/10 border border-red-500/20 text-red-400 py-3 rounded-xl text-sm font-black tracking-widest hover:bg-red-500 hover:text-white transition-all">LOGOUT</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Setup internal UI routing logic while allowing external dashboard.js to hook in
+    window.dashboard = window.dashboard || {};
+
+    window.dashboard.switchTab = function (tabId) {
+      // Remove active classes from all links
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active', 'text-primary');
+        // for mobile icons, remove primary text color
+        if (link.parentElement.id === 'mobileNav') {
+          link.classList.remove('text-primary');
+          link.classList.add('text-zinc-500');
+        }
+      });
+
+      // Hide all panels
+      document.querySelectorAll('.dash-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+
+      // Add active classes to target elements (multiple links can point to same tab)
+      document.querySelectorAll(`.nav-link[data-tab="${tabId}"]`).forEach(link => {
+        link.classList.add('active');
+        if (link.parentElement.id === 'mobileNav') {
+          link.classList.add('text-primary');
+          link.classList.remove('text-zinc-500');
+        }
+      });
+
+      const activePanel = document.getElementById(tabId);
+      if (activePanel) activePanel.classList.add('active');
+
+      // Reset Game View if leaving games tab
+      if (tabId !== 'tab-game') {
+        document.getElementById('gameViewOverlay').classList.add('hidden');
+        document.getElementById('gamesDirectory').classList.remove('hidden');
+      }
+    };
+
+    // UI function to open game natively
+    if (!window.dashboard.openGame) {
+      window.dashboard.openGame = function () {
+        document.getElementById('gamesDirectory').classList.add('hidden');
+        document.getElementById('gameViewOverlay').classList.remove('hidden');
+      };
+    }
+
+    // Attach event listeners to all nav links
+    document.querySelectorAll('.nav-link').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        // Determine closest button just in case icon is clicked
+        const targetBtn = e.target.closest('.nav-link');
+        const tabId = targetBtn.getAttribute('data-tab');
+        window.dashboard.switchTab(tabId);
+      });
+    });
+
+    // Wallet sub-tab switching logic
+    const wTabDep = document.getElementById('wTabDeposit');
+    const wTabWit = document.getElementById('wTabWithdraw');
+    const vDep = document.getElementById('viewDeposit');
+    const vWit = document.getElementById('viewWithdraw');
+
+    if (wTabDep && wTabWit) {
+      wTabDep.addEventListener('click', () => {
+        wTabDep.classList.add('active', 'border-primary/20', 'text-primary');
+        wTabDep.classList.remove('text-zinc-500', 'bg-surface-container-low', 'border-transparent');
+
+        wTabWit.classList.remove('active', 'border-primary/20', 'text-primary');
+        wTabWit.classList.add('text-zinc-500', 'bg-surface-container-low', 'border-transparent');
+
+        vDep.classList.remove('hidden');
+        vWit.classList.add('hidden');
+      });
+
+      wTabWit.addEventListener('click', () => {
+        wTabWit.classList.add('active', 'border-primary/20', 'text-primary');
+        wTabWit.classList.remove('text-zinc-500', 'bg-surface-container-low', 'border-transparent');
+
+        wTabDep.classList.remove('active', 'border-primary/20', 'text-primary');
+        wTabDep.classList.add('text-zinc-500', 'bg-surface-container-low', 'border-transparent');
+
+        vWit.classList.remove('hidden');
+        vDep.classList.add('hidden');
+      });
+    }
+  </script>
+
+  <script src="/js/dashboard.js"></script>
+
+</body>
+
+</html>

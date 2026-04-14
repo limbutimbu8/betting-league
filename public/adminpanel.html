@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Prediction Club - Admin Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --primary: #3b82f6;
+      --text: #f8fafc;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --violet: #8b5cf6;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .header {
+      background: var(--card-bg);
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: var(--primary);
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #334155;
+    }
+
+    .admin-tab {
+      flex: 1;
+      padding: 16px;
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .admin-tab.active {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      font-weight: 600;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .admin-content {
+      display: none;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid #334155;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    button:not(.admin-tab) {
+      transition: transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* Game Control */
+    .live-timer-card {
+      background: #020617;
+      border: 1px solid #334155;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .live-period {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 5px;
+    }
+
+    .live-time {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .override-actions h3 {
+      color: #94a3b8;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .override-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .override-grid-num {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn-override {
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-green {
+      background: var(--success);
+    }
+
+    .btn-red {
+      background: var(--danger);
+    }
+
+    .btn-violet {
+      background: var(--violet);
+    }
+
+    .btn-size {
+      background: #334155;
+    }
+
+    .btn-num {
+      background: #475569;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- AUTH OVERLAY -->
+  <div id="adminAuthOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; display:flex; justify-content:center; align-items:center;">
+    <div style="background:var(--card-bg); padding:30px; border-radius:12px; border:1px solid #334155; width:90%; max-width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.5); overflow-y:auto; max-height:90vh;">
+      
+      <!-- Login View -->
+      <div id="adminAuthLoginView">
+        <h2 style="margin-top:0; color:var(--primary); text-align:center;">Admin Security</h2>
+        <p style="text-align:center; color:#94a3b8; font-size:14px; margin-bottom:20px;">Please verify your identity to access the dashboard.</p>
+        
+        <div style="margin-bottom:15px;">
+          <label style="font-size:12px; font-weight:bold; color:var(--text); display:block; margin-bottom:5px;">Username</label>
+          <input type="text" value="admin" readonly style="width:100%; padding:12px; border-radius:6px; border:1px solid #334155; background:#0f172a; color:#94a3b8; font-family:'Outfit', sans-serif; box-sizing:border-box;">
+        </div>
+        
+        <div style="margin-bottom:20px;">
+          <label style="font-size:12px; font-weight:bold; color:var(--text); display:block; margin-bottom:5px;">Password</label>
+          <input type="password" id="adminAuthPassword" placeholder="Enter admin password" style="width:100%; padding:12px; border-radius:6px; border:1px solid #334155; background:#0f172a; color:white; font-family:'Outfit', sans-serif; box-sizing:border-box;">
+        </div>
+        
+        <button onclick="verifyAdminLogin()" id="btnVerifyLogin" style="width:100%; background:var(--primary); color:white; border:none; padding:14px; border-radius:6px; font-weight:bold; font-size:16px; cursor:pointer; font-family:'Outfit', sans-serif;">Verify Access</button>
+        
+        <div style="text-align:center; margin-top:20px;">
+          <a href="#" onclick="toggleForgotView(true)" style="color:#94a3b8; font-size:13px; text-decoration:none;">Forgot Password?</a>
+        </div>
+      </div>
+
+      <!-- Forgot Password View -->
+      <div id="adminAuthForgotView" style="display:none;">
+        <h2 style="margin-top:0; color:var(--primary); text-align:center;">Reset Password</h2>
+        <p style="text-align:center; color:#94a3b8; font-size:13px; margin-bottom:20px;">Use one of the authorized methods to recover your account.</p>
+        
+        <div style="margin-top:20px; background:#0f172a; padding:15px; border-radius:8px; border:1px solid #ef4444;">
+          <h3 style="margin-top:0; font-size:16px; color:#ef4444;">1. Security Key Upload</h3>
+          <div id="adminKeyUploadSection">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <input type="file" id="adminKeyFile" accept=".js" style="padding:10px; border-radius:4px; border:1px solid #334155; background:#1e293b; color:white; font-family:'Outfit', sans-serif;">
+              <button onclick="verifyAdminKey()" style="background:#ef4444; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">Verify Key</button>
+            </div>
+            <div id="keyStatus" style="margin-top:10px; font-size:13px;"></div>
+          </div>
+
+          <div id="adminPasswordSection" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid #334155;">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <input type="password" id="adminNewPassword" placeholder="New Password" style="width:100%; padding:10px; border-radius:4px; border:1px solid #334155; background:#1e293b; color:white; box-sizing:border-box;">
+              <input type="password" id="adminConfirmPassword" placeholder="Confirm Password" style="width:100%; padding:10px; border-radius:4px; border:1px solid #334155; background:#1e293b; color:white; box-sizing:border-box;">
+              <button onclick="changeAdminPassword()" style="background:#10b981; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">Update Password</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px; background:#0f172a; padding:15px; border-radius:8px; border:1px solid #3b82f6;">
+          <h3 style="margin-top:0; font-size:16px; color:#3b82f6;">2. Email OTP</h3>
+          <div id="adminOtpRequestSection">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <button onclick="requestAdminOtp()" id="btnRequestOtp" style="background:#3b82f6; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">Request Email OTP</button>
+            </div>
+            <div id="otpRequestStatus" style="margin-top:10px; font-size:13px;"></div>
+          </div>
+
+          <div id="adminOtpVerifySection" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid #334155;">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <input type="text" id="adminOtpInput" placeholder="000000" style="width:100%; letter-spacing:4px; font-size:18px; text-align:center; padding:10px; border-radius:4px; border:1px solid #334155; background:#1e293b; color:white; box-sizing:border-box;">
+              <button onclick="verifyAdminOtp()" id="btnVerifyOtp" style="background:#f59e0b; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">Verify OTP</button>
+            </div>
+            <div id="otpVerifyStatus" style="margin-top:10px; font-size:13px;"></div>
+          </div>
+
+          <div id="adminOtpPasswordSection" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid #334155;">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <input type="password" id="adminOtpNewPassword" placeholder="New Password" style="width:100%; padding:10px; border-radius:4px; border:1px solid #334155; background:#1e293b; color:white; box-sizing:border-box;">
+              <input type="password" id="adminOtpConfirmPassword" placeholder="Confirm Password" style="width:100%; padding:10px; border-radius:4px; border:1px solid #334155; background:#1e293b; color:white; box-sizing:border-box;">
+              <button onclick="changeAdminPasswordOtp()" style="background:#10b981; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">Update Password (via OTP)</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px; padding-top:15px; border-top:1px solid #334155;">
+          <a href="#" onclick="toggleForgotView(false)" style="color:var(--text); font-size:13px; text-decoration:none;">← Back to Login</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="mainAdminApp" style="display: none;">
+  <div class="header">
+    <h1>Prediction Club Admin</h1>
+  </div>
+
+  <div class="tabs">
+    <button class="admin-tab active" data-target="viewDashboard">Dashboard</button>
+    <button class="admin-tab" data-target="viewRequests">W&T Requests</button>
+    <button class="admin-tab" data-target="viewGameControl">Game Control</button>
+    <button class="admin-tab" data-target="viewUsers">Players</button>
+    <button class="admin-tab" data-target="viewSettings">Settings</button>
+  </div>
+
+  <div class="container">
+
+    <!-- Dashboard -->
+    <div id="viewDashboard" class="admin-content" style="display: block;">
+      <h2 style="margin-top:0;">Platform Overview</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value" id="statUsers">...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Platform Profit</div>
+          <div class="stat-value" id="statProf" style="color:var(--success);">...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Deposits</div>
+          <div class="stat-value" id="statDep" style="color:var(--primary);">...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Withdrawals</div>
+          <div class="stat-value" id="statWith" style="color:var(--danger);">...</div>
+        </div>
+      </div>
+
+      <div style="margin-top:30px; text-align:center;">
+        <button onclick="localStorage.removeItem('auth_token'); window.location.href='/auth';" style="background:var(--danger); color:white; border:none; padding:10px 20px; border-radius:4px; cursor:pointer;">Logout Admin</button>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div id="viewSettings" class="admin-content">
+      <h2 style="margin-top:0;">Platform Settings</h2>
+      
+      <div style="margin-top:20px; background:var(--card-bg); padding:20px; border-radius:8px; border:1px solid #334155;">
+        <h3 style="margin-top:0;">Payment Settings</h3>
+        <p style="font-size:12px; color:#94a3b8; margin-bottom:15px;">Set the global UPI ID. The QR code on the deposit page will dynamically generate for this UPI ID.</p>
+        <div style="display:flex; gap:10px;">
+          <input type="text" id="adminUpiInput" placeholder="Enter UPI ID (e.g. name@bank)" style="flex:1; padding:10px; border-radius:4px; border:1px solid #334155; background:#0f172a; color:white; font-family:'Outfit', sans-serif;">
+        </div>
+      </div>
+
+      <div style="margin-top:20px; background:var(--card-bg); padding:20px; border-radius:8px; border:1px solid #334155;">
+        <h3 style="margin-top:0;">Support Social Links</h3>
+        <p style="font-size:12px; color:#94a3b8; margin-bottom:15px;">Set the WhatsApp number and Telegram join link for the user dashboard.</p>
+        <div style="display:flex; flex-direction:column; gap:15px;">
+          <div>
+            <label style="font-size:12px; font-weight:bold; color:var(--text); display:block; margin-bottom:5px;">WhatsApp Number (Format: +91...):</label>
+            <input type="text" id="adminWhatsappInput" placeholder="+910000000000" style="width:100%; padding:10px; border-radius:4px; border:1px solid #334155; background:#0f172a; color:white; font-family:'Outfit', sans-serif;">
+          </div>
+          <div>
+            <label style="font-size:12px; font-weight:bold; color:var(--text); display:block; margin-bottom:5px;">Telegram Channel Link:</label>
+            <input type="text" id="adminTelegramInput" placeholder="https://t.me/yourchannel" style="width:100%; padding:10px; border-radius:4px; border:1px solid #334155; background:#0f172a; color:white; font-family:'Outfit', sans-serif;">
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px; text-align:right;">
+         <button onclick="saveSettings()" style="background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:4px; cursor:pointer; font-weight:bold;">Save All Settings</button>
+      </div>
+    </div>
+
+    <!-- Requests -->
+    <div id="viewRequests" class="admin-content">
+      <h2 style="margin-top:0;">Pending Transactions</h2>
+      <div id="reqList">
+        <!-- JS fills this -->
+      </div>
+    </div>
+
+    <!-- Game Control -->
+    <div id="viewGameControl" class="admin-content">
+      <h2 style="margin-top:0;">Manual Game Override</h2>
+
+      <div class="live-timer-card">
+        <div class="live-period" id="gcPeriod">Period: ---</div>
+        <div class="live-time" id="gcTime">--:--</div>
+        <div style="font-size:12px; color:#94a3b8; margin-top:5px;" id="gcPhase">Waiting for phase...</div>
+      </div>
+
+      <!-- Live Pool Totals -->
+      <div
+        style="background:var(--card-bg); padding:20px; border-radius:8px; border:1px solid #334155; margin-bottom:20px;">
+        <h3 style="margin-top:0; color:var(--text); font-size:16px;">Live Betting Pools</h3>
+        <p style="font-size:12px; color:#94a3b8; margin-bottom:15px;">Total Users: <strong id="poolUsers">0</strong> |
+          Total Bets: <strong id="poolAmount" style="color:#4ade80;">₹0</strong></p>
+
+        <div style="display:flex; gap:15px; margin-bottom:15px;">
+          <div style="flex:1; background:#020617; padding:10px; border-radius:6px; text-align:center;">
+            <div style="color:var(--success); font-size:12px; font-weight:bold;">GREEN</div>
+            <div id="poolCGreen" style="font-size:18px;">₹0</div>
+          </div>
+          <div style="flex:1; background:#020617; padding:10px; border-radius:6px; text-align:center;">
+            <div style="color:var(--violet); font-size:12px; font-weight:bold;">VIOLET</div>
+            <div id="poolCViolet" style="font-size:18px;">₹0</div>
+          </div>
+          <div style="flex:1; background:#020617; padding:10px; border-radius:6px; text-align:center;">
+            <div style="color:var(--danger); font-size:12px; font-weight:bold;">RED</div>
+            <div id="poolCRed" style="font-size:18px;">₹0</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:15px; margin-bottom:15px;">
+          <div style="flex:1; background:#020617; padding:10px; border-radius:6px; text-align:center;">
+            <div style="color:#94a3b8; font-size:12px; font-weight:bold;">SMALL (0-4)</div>
+            <div id="poolSSmall" style="font-size:18px;">₹0</div>
+          </div>
+          <div style="flex:1; background:#020617; padding:10px; border-radius:6px; text-align:center;">
+            <div style="color:#94a3b8; font-size:12px; font-weight:bold;">BIG (5-9)</div>
+            <div id="poolSBig" style="font-size:18px;">₹0</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:space-between;">
+          <div
+            style="background:#020617; padding:5px 10px; border-radius:4px; text-align:center; font-size:12px; width:18%;">
+            <span style="color:#94a3b8;">0</span>
+            <div id="poolN0">₹0</div>
+          </div>
+          <div
+            style="background:#020617; padding:5px 10px; border-radius:4px; text-align:center; font-size:12px; width:18%;">
+            <span style="color:#94a3b8;">1</span>
+            <div id="poolN1">₹0</div>
+          </div>
+          <div
+            style="background:#020617; padding:5px 10px; border-radius:4px; text-align:center; font-size:12px; width:18%;">
+            <span style="color:#94a3b8;">2</span>
+            <div id="poolN2">₹0</div>
+          </div>
+          <div
+            style="background:#020617; padding:5px 10px; border-radius:4px; text-align:center; font-size:12px; width:18%;">
+            <span style="color:#94a3b8;">3</span>
+            <div id="poolN3">₹0</div>
+          </div>
+          <div
+            style="background:#020617; padding:5px 10px; border-radius:4px; text-align:center; font-size:12px; width:18%;">
+            <span style="color:#94a3b8;">4</span>
+            <div id="poolN4">₹0</div>
+          </div>
+          <div
+            style="background:#020617; padding:5px 10px; border-radius:4px; text-align:center; font-size:12px; width:18%; margin-top:5px;">
+            <span style="color:#94a3b8;">5</span>
+            <div id="poolN5">₹0</div>
+          </div>
+          <div
+            style="background:#020617; padding:5px 10px; border-radius:4px; text-align:center; font-size:12px; width:18%; margin-top:5px;">
+            <span style="color:#94a3b8;">6</span>
+            <div id="poolN6">₹0</div>
+          </div>
+          <div
+            style="background:#020617; padding:5px 10px; border-radius:4px; text-align:center; font-size:12px; width:18%; margin-top:5px;">
+            <span style="color:#94a3b8;">7</span>
+            <div id="poolN7">₹0</div>
+          </div>
+          <div
+            style="background:#020617; padding:5px 10px; border-radius:4px; text-align:center; font-size:12px; width:18%; margin-top:5px;">
+            <span style="color:#94a3b8;">8</span>
+            <div id="poolN8">₹0</div>
+          </div>
+          <div
+            style="background:#020617; padding:5px 10px; border-radius:4px; text-align:center; font-size:12px; width:18%; margin-top:5px;">
+            <span style="color:#94a3b8;">9</span>
+            <div id="poolN9">₹0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Stream -->
+      <div
+        style="background:var(--card-bg); padding:20px; border-radius:8px; border:1px solid #334155; margin-bottom:20px;">
+        <h3 style="margin-top:0; color:var(--text); font-size:16px;">Live Bets Stream</h3>
+        <div id="liveStreamBox"
+          style="background:#020617; border-radius:6px; height:200px; overflow-y:auto; padding:10px; font-family:monospace; font-size:13px; color:#cbd5e1;">
+        </div>
+      </div>
+
+      <div style="background:var(--card-bg); padding:20px; border-radius:8px; border:1px solid #334155;">
+        <div
+          style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #334155;">
+          <div>
+            <h3 style="margin:0; color:var(--text);">System Advantage (Rigging)</h3>
+            <p style="font-size:12px; color:#94a3b8; margin:5px 0 0 0;">When enabled, the system calculates the lowest
+              payout and forces the result to minimize player winnings. Manual override ignores this.</p>
+          </div>
+          <label style="position:relative; display:inline-block; width:50px; height:24px;">
+            <input type="checkbox" id="riggingToggle" style="opacity:0; width:0; height:0;"
+              onchange="toggleRigging(this.checked)">
+            <span
+              style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#334155; transition:.4s; border-radius:34px;">
+              <span id="riggingSlider"
+                style="position:absolute; content:''; height:16px; width:16px; left:4px; bottom:4px; background-color:white; transition:.4s; border-radius:50%;"></span>
+            </span>
+          </label>
+        </div>
+
+        <p style="font-size:13px; color:#94a3b8; margin-top:0; margin-bottom:20px;">
+          Select an outcome to force for the current round. You must select before the timer hits 0.
+        </p>
+
+        <div class="override-actions">
+          <h3>Force Color</h3>
+          <div class="override-grid">
+            <button class="btn-override btn-green" onclick="setOverride('color', 'green')">GREEN</button>
+            <button class="btn-override btn-violet" onclick="setOverride('color', 'violet')">VIOLET</button>
+            <button class="btn-override btn-red" onclick="setOverride('color', 'red')">RED</button>
+          </div>
+
+          <h3>Force Size</h3>
+          <div class="override-grid" style="grid-template-columns: 1fr 1fr;">
+            <button class="btn-override btn-size" onclick="setOverride('size', 'small')">SMALL (0-4)</button>
+            <button class="btn-override btn-size" onclick="setOverride('size', 'big')">BIG (5-9)</button>
+          </div>
+
+          <h3>Force Exact Number</h3>
+          <div class="override-grid-num">
+            <button class="btn-override btn-num" onclick="setOverride('number', 0)">0</button>
+            <button class="btn-override btn-num" onclick="setOverride('number', 1)">1</button>
+            <button class="btn-override btn-num" onclick="setOverride('number', 2)">2</button>
+            <button class="btn-override btn-num" onclick="setOverride('number', 3)">3</button>
+            <button class="btn-override btn-num" onclick="setOverride('number', 4)">4</button>
+            <button class="btn-override btn-num" onclick="setOverride('number', 5)">5</button>
+            <button class="btn-override btn-num" onclick="setOverride('number', 6)">6</button>
+            <button class="btn-override btn-num" onclick="setOverride('number', 7)">7</button>
+            <button class="btn-override btn-num" onclick="setOverride('number', 8)">8</button>
+            <button class="btn-override btn-num" onclick="setOverride('number', 9)">9</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Players Management -->
+    <div id="viewUsers" class="admin-content">
+      <h2 style="margin-top:0;">Players Management</h2>
+      <div id="usersList">
+        <!-- JS fills this -->
+      </div>
+    </div>
+
+  </div>
+
+  </div> <!-- Close mainAdminApp -->
+
+  <script src="/js/admin.js"></script>
+</body>
+
+</html>
