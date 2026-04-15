@@ -211,29 +211,10 @@
       <!-- Forgot Password View -->
       <div id="adminAuthForgotView" style="display:none;">
         <h2 style="margin-top:0; color:var(--primary); text-align:center;">Reset Password</h2>
-        <p style="text-align:center; color:#94a3b8; font-size:13px; margin-bottom:20px;">Use one of the authorized methods to recover your account.</p>
+        <p style="text-align:center; color:#94a3b8; font-size:13px; margin-bottom:20px;">An OTP will be sent to your registered admin email address.</p>
         
-        <div style="margin-top:20px; background:#0f172a; padding:15px; border-radius:8px; border:1px solid #ef4444;">
-          <h3 style="margin-top:0; font-size:16px; color:#ef4444;">1. Security Key Upload</h3>
-          <div id="adminKeyUploadSection">
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              <input type="file" id="adminKeyFile" accept=".js" style="padding:10px; border-radius:4px; border:1px solid #334155; background:#1e293b; color:white; font-family:'Outfit', sans-serif;">
-              <button onclick="verifyAdminKey()" style="background:#ef4444; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">Verify Key</button>
-            </div>
-            <div id="keyStatus" style="margin-top:10px; font-size:13px;"></div>
-          </div>
-
-          <div id="adminPasswordSection" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid #334155;">
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              <input type="password" id="adminNewPassword" placeholder="New Password" style="width:100%; padding:10px; border-radius:4px; border:1px solid #334155; background:#1e293b; color:white; box-sizing:border-box;">
-              <input type="password" id="adminConfirmPassword" placeholder="Confirm Password" style="width:100%; padding:10px; border-radius:4px; border:1px solid #334155; background:#1e293b; color:white; box-sizing:border-box;">
-              <button onclick="changeAdminPassword()" style="background:#10b981; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">Update Password</button>
-            </div>
-          </div>
-        </div>
-
         <div style="margin-top:20px; background:#0f172a; padding:15px; border-radius:8px; border:1px solid #3b82f6;">
-          <h3 style="margin-top:0; font-size:16px; color:#3b82f6;">2. Email OTP</h3>
+          <h3 style="margin-top:0; font-size:16px; color:#3b82f6;">📧 Email OTP Recovery</h3>
           <div id="adminOtpRequestSection">
             <div style="display:flex; flex-direction:column; gap:10px;">
               <button onclick="requestAdminOtp()" id="btnRequestOtp" style="background:#3b82f6; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">Request Email OTP</button>
